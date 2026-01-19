@@ -1,2 +1,2 @@
-# rock-paper-scissors
+# Uas
 Tugas UAS
