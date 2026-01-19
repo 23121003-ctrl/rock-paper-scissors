@@ -1,0 +1,452 @@
+{
+  "name": "NUR ZAHRO QULBIYA.WargaCare Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lapor-bot",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        176,
+        144
+      ],
+      "id": "9e079444-e03d-49de-978e-97990da612bc",
+      "name": "Webhook",
+      "webhookId": "221eb269-2740-44e0-96a0-130e516fc2e1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Laporan dari: {{ $('Webhook').item.json.body.nama }}. Isi Keluhan: {{ $('Webhook').item.json.body.pesan }}",
+        "options": {
+          "systemMessage": "Kamu adalah admin \"WargaCare\". Analisis laporan warga.\nATURAN KERAS:\n1. Validasi: Jika pesan kasar, tidak masuk akal, atau iklan, set \"valid\": false. Jika benar keluhan, set \"valid\": true.\n2. Kategori: [Infrastruktur, Sampah, Admin, Lainnya].\n3. Urgensi: [Tinggi, Sedang, Rendah].\n4. Output WAJIB JSON Murni:\n{\n  \"valid\": true,\n  \"kategori\": \"...\",\n  \"urgensi\": \"...\",\n  \"balasan\": \"...\",\n  \"subjek_email\": \"Judul singkat untuk email tiket\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        144
+      ],
+      "id": "e077504d-b9e3-4903-8c1b-385094f58075",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "mistralai/devstral-2512:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        384,
+        352
+      ],
+      "id": "1c224185-45d7-49c4-96e0-46c0fc3f48db",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "x4v1gbBn5AYg2lzO",
+          "name": "WargaCare_Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ JSON.parse($('AI Agent').item.json.output.replace(/```json/g, '').replace(/```/g, '')) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        480
+      ],
+      "id": "a6d47001-0080-4f98-97f0-cb38d14ad9f4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1RadRk17u0vwTCU22UkW2UxmjsWIeRCZjrMsp_cIkpAo",
+          "mode": "list",
+          "cachedResultName": "WargaCare",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RadRk17u0vwTCU22UkW2UxmjsWIeRCZjrMsp_cIkpAo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RadRk17u0vwTCU22UkW2UxmjsWIeRCZjrMsp_cIkpAo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "now": "={{ $now }}",
+            "nama": "={{ $('Webhook').item.json.body.nama }}",
+            "pesan": "={{ $('Webhook').item.json.body.pesan }}",
+            "kategori": "={{ $('Edit Fields').item.json.kategori }}",
+            "urgensi": "={{ $('Edit Fields').item.json.urgensi }}",
+            "balasan": "={{ $('Edit Fields').item.json.balasan }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "now",
+              "displayName": "now",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nama",
+              "displayName": "nama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pesan",
+              "displayName": "pesan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "kategori",
+              "displayName": "kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "urgensi",
+              "displayName": "urgensi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "balasan",
+              "displayName": "balasan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        688,
+        464
+      ],
+      "id": "e9d122a8-4750-4e15-90d5-6ba8aa0740d1",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xh2ZczOld75DBipA",
+          "name": "WargaCare_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"reply\": \"{{ $('Edit Fields').item.json.balasan }}\",\n  \"ticket_info\": {\n    \"kategori\": \"{{ $('Edit Fields').item.json.kategori }}\",\n    \"urgensi\": \"{{ $('Edit Fields').item.json.urgensi }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1424,
+        464
+      ],
+      "id": "135db1c4-2818-4791-a2d2-028a800290ab",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## 📋 Panduan Pengujian (WargaCare AI)\n\n**Deskripsi Sistem:**\nWorkflow ini mengintegrasikan **AI (Mistral)** untuk validasi & klasifikasi, **Google Sheets** untuk database, **Gmail** untuk tiket user, dan **Telegram** untuk peringatan darurat.\n\n---\n\n### 1️⃣ Skenario 1: Tes Spam (Filter)\n* **Input:** Ketik pesan asal (contoh: \"asdfgh\" atau \"Jual obat\").\n* **Hasil:** Web merespon **\"DITOLAK / SPAM\"**. Data **TIDAK** disimpan ke Sheets.\n\n### 2️⃣ Skenario 2: Tes Normal (Tiket Email)\n* **Input:** Keluhan biasa (contoh: \"Lampu jalan mati\") + **Masukkan Email Bapak/Ibu**.\n* **Hasil:** Web merespon sukses. **Cek Inbox Email** Bapak/Ibu untuk melihat Bukti Tiket Laporan.\n\n### 3️⃣ Skenario 3: Tes Bahaya (Eskalasi Telegram)\n* **Input:** Keluhan kritis (contoh: \"Kebakaran besar, ada korban terjebak!\").\n* **Hasil:** Sistem mendeteksi Prioritas **TINGGI**. Notifikasi **TELEGRAM** akan berbunyi di HP Admin (Mahasiswa) secara Real-time.",
+        "height": 976,
+        "width": 2416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -752,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "53c5a9cb-fb1d-486e-b079-4ffbdc199f22",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2b9b6bcc-8a49-430a-8ff7-27f52c8a5cf6",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        480
+      ],
+      "id": "dea7b1ae-386d-4bd9-8496-c29aa0fe6d9f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"reply\": \"{{ $json.balasan }}\",\n  \"ticket_info\": null\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        176,
+        720
+      ],
+      "id": "413bf394-c552-4a56-8bee-6bb45a96a415",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8aac1d3f-2043-45d4-bdbc-fed01fe5f29e",
+              "leftValue": "={{ $json.urgensi }}",
+              "rightValue": "={{ \"Tinggi\" }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1072,
+        688
+      ],
+      "id": "c6753e97-27aa-4adf-99ea-1476a4b513d5",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.email }}",
+        "subject": "=[WargaCare] Tiket Pengaduan #{{ $today.format('DDMMYY') }} - Status: {{ $('Edit Fields').item.json.urgensi }}",
+        "message": "=<div style=\"font-family: Arial, sans-serif; color: #333333; max-width: 600px; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;\">\n    \n    <div style=\"background-color: #2563eb; color: #ffffff; padding: 20px; text-align: center;\">\n        <h2 style=\"margin: 0;\">Laporan Diterima</h2>\n        <p style=\"margin: 5px 0 0 0; font-size: 14px;\">WargaCare AI System</p>\n    </div>\n\n    <div style=\"padding: 20px;\">\n        <p>Halo <strong>{{ $('Webhook').item.json.body.nama }}</strong>,</p>\n        \n        <p>Terima kasih telah berpartisipasi menjaga lingkungan. Laporan Anda telah kami terima dan sudah dianalisis oleh sistem kami.</p>\n        \n        <div style=\"background-color: #f9fafb; padding: 15px; border-radius: 6px; border-left: 4px solid #2563eb; margin: 20px 0;\">\n            <p style=\"margin: 5px 0;\"><strong>📂 Kategori:</strong> {{ $('Edit Fields').item.json.kategori }}</p>\n            <p style=\"margin: 5px 0;\"><strong>⚡ Prioritas:</strong> {{ $('Edit Fields').item.json.urgensi }}</p>\n            <hr style=\"border: 0; border-top: 1px solid #e5e7eb; margin: 10px 0;\">\n            <p style=\"margin: 5px 0;\"><strong>💬 Respon Petugas:</strong></p>\n            <p style=\"margin: 5px 0; font-style: italic; color: #555;\">\"{{ $('Edit Fields').item.json.balasan }}\"</p>\n        </div>\n\n        <p style=\"font-size: 12px; color: #666;\">\n            <strong>Isi Laporan Anda:</strong><br>\n            {{ $('Webhook').item.json.body.pesan }}\n        </p>\n    </div>\n\n    <div style=\"background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #888;\">\n        <p style=\"margin: 0;\">&copy; 2026 WargaCare Project. Pesan ini dikirim otomatis oleh sistem.</p>\n    </div>\n</div>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1072,
+        464
+      ],
+      "id": "b2eb9307-63c7-4ba1-80ac-74ed0742cd00",
+      "name": "Send a message",
+      "webhookId": "55996254-59e2-4c87-9750-a9ac9482350a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qXX7rtCfMrBjr2BQ",
+          "name": "FocusCam_rent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "6948912690",
+        "text": "=🚨 *PERINGATAN ESKALASI* 🚨  Status: *{{ $('Edit Fields').item.json.urgensi }}* Kategori: {{ $('Edit Fields').item.json.kategori }}  👤 *Pelapor:* {{ $('Webhook').item.json.body.nama }} 📧 *Email:* {{ $('Webhook').item.json.body.email }}  📝 *Isi Laporan:* {{ $('Webhook').item.json.body.pesan }}  _Mohon segera ditindaklanjuti!_",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        672
+      ],
+      "id": "fe5bb694-d8d4-4315-844d-7f87be7b1902",
+      "name": "Send a text message",
+      "webhookId": "bc3ce398-bb88-4bbb-8163-7a6b83c79bb4",
+      "credentials": {
+        "telegramApi": {
+          "id": "u1UQd4cAvIDBUWvn",
+          "name": "WargaCare_bot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d5fa1638-58c4-4ebd-b753-bcb79504dd2b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d27c23b2918b1655298e933933b62db513579ba86a5ac8592177f2d89182a3fc"
+  },
+  "id": "oN1UzYH7nzcrXVba",
+  "tags": []
+}
